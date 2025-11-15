@@ -6,28 +6,35 @@ import (
 )
 
 // UserID — отдельный тип, чтобы не путать с другими ID.
-type UserID int64
+type UserID string
 
 type User struct {
 	ID       UserID
-	Name     string
+	Username string
+	TeamName TeamName
 	IsActive bool
 }
 
 var (
+	ErrEmptyUserID   = errors.New("user ID cannot be empty")
 	ErrEmptyUserName = errors.New("user name cannot be empty")
 )
 
 // NewUser создаёт активного пользователя.
 // ID обычно проставит репозиторий после вставки в БД.
-func NewUser(name string) (*User, error) {
-	name = strings.TrimSpace(name)
-	if name == "" {
+func NewUser(id UserID, username string, teamName TeamName, isActive bool) (*User, error) {
+	username = strings.TrimSpace(username)
+	if id == "" {
+		return nil, ErrEmptyUserID
+	}
+	if username == "" {
 		return nil, ErrEmptyUserName
 	}
 
 	return &User{
-		Name:     name,
+		ID:       id,
+		Username: username,
+		TeamName: teamName,
 		IsActive: true,
 	}, nil
 }
@@ -38,7 +45,7 @@ func (u *User) Rename(newName string) error {
 	if newName == "" {
 		return ErrEmptyUserName
 	}
-	u.Name = newName
+	u.Username = newName
 	return nil
 }
 
@@ -55,4 +62,12 @@ func (u *User) Deactivate() {
 // Геттер для проверки активности
 func (u User) Active() bool {
 	return u.IsActive
+}
+
+func (u User) ToTeamMember() TeamMember {
+	return TeamMember{
+		UserID:   u.ID,
+		Username: u.Username,
+		IsActive: u.IsActive,
+	}
 }

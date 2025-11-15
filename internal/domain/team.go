@@ -6,20 +6,28 @@ import (
 )
 
 // Тип идентификатора команды.
-type TeamID int64
+type TeamName string
+
+type TeamMember struct {
+	UserID   UserID
+	Username string
+	IsActive bool
+}
 
 type Team struct {
-	ID   TeamID
-	Name string
+	Name    TeamName
+	Members []TeamMember
 }
 
 var (
 	ErrEmptyTeamName = errors.New("team name cannot be empty")
+	ErrTeamExists    = errors.New("team with this name already exists")
+	ErrNotFound      = errors.New("not found")
 )
 
 // NewTeam создаёт команду без ID, репозиторий потом подставит ID.
-func NewTeam(name string) (*Team, error) {
-	name = strings.TrimSpace(name)
+func NewTeam(name TeamName) (*Team, error) {
+	name = TeamName(strings.TrimSpace(string(name)))
 	if name == "" {
 		return nil, ErrEmptyTeamName
 	}
@@ -30,8 +38,8 @@ func NewTeam(name string) (*Team, error) {
 }
 
 // Переименование команды с валидацией.
-func (t *Team) Rename(newName string) error {
-	newName = strings.TrimSpace(newName)
+func (t *Team) Rename(newName TeamName) error {
+	newName = TeamName(strings.TrimSpace(string(newName)))
 	if newName == "" {
 		return ErrEmptyTeamName
 	}
@@ -39,8 +47,7 @@ func (t *Team) Rename(newName string) error {
 	return nil
 }
 
-// Тип для членства в команде
-type TeamMember struct {
-	TeamID TeamID
-	UserID UserID
+// SetMembers полностью заменяет состав команды.
+func (t *Team) SetMembers(members []TeamMember) {
+	t.Members = append([]TeamMember(nil), members...)
 }

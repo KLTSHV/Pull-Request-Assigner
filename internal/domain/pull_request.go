@@ -3,10 +3,11 @@ package domain
 import (
 	"errors"
 	"strings"
+	"time"
 )
 
 // PullRequestID — тип идентификатора PR.
-type PullRequestID int64
+type PullRequestID string
 
 // PRStatus — статус PR
 type PRStatus string
@@ -21,31 +22,45 @@ const (
 
 type PullRequest struct {
 	ID        PullRequestID
-	Title     string
+	Name      string
 	AuthorID  UserID
 	Status    PRStatus
 	Reviewers []UserID
+	CreatedAt *time.Time
+	MergedAt  *time.Time
+}
+
+type PullRequestShort struct {
+	ID       PullRequestID
+	Name     string
+	AuthorID UserID
+	Status   PRStatus
 }
 
 var (
 	ErrReviewersLocked   = errors.New("cannot modify reviewers of merged pull request")
-	ErrEmptyPRTitle      = errors.New("pull request title cannot be empty")
+	ErrEmptyPRName       = errors.New("pull request name cannot be empty")
 	ErrReviewerIsAuthor  = errors.New("reviewer cannot be the author of the pull request")
 	ErrDuplicateReviewer = errors.New("duplicate reviewer in pull request")
 	ErrReviewerNotFound  = errors.New("reviewer not found in pull request")
 	ErrInvalidPRStatus   = errors.New("invalid pull request status")
 	ErrTooManyReviewers  = errors.New("too many reviewers for pull request")
+	ErrEmptyPRID         = errors.New("pull request ID cannot be empty")
+	ErrPullRequestExists = errors.New("pull request with this ID already exists")
 )
 
 // Cоздаёт PR в статусе OPEN без ревьюверов.
-func NewPullRequest(title string, authorID UserID) (*PullRequest, error) {
-	title = strings.TrimSpace(title)
-	if title == "" {
-		return nil, ErrEmptyPRTitle
+func NewPullRequest(id PullRequestID, name string, authorID UserID) (*PullRequest, error) {
+	name = strings.TrimSpace(name)
+	if id == "" {
+		return nil, ErrEmptyPRID
 	}
-
+	if name == "" {
+		return nil, ErrEmptyPRName
+	}
 	return &PullRequest{
-		Title:    title,
+		ID:       id,
+		Name:     name,
 		AuthorID: authorID,
 		Status:   PRStatusOpen,
 	}, nil
@@ -121,11 +136,14 @@ func (pr *PullRequest) ReplaceReviewer(oldReviewer, newReviewer UserID) error {
 }
 
 // Делает merge идемпотентным: повторный вызов не приводит к ошибке.
-func (pr *PullRequest) Merge() {
+func (pr *PullRequest) Merge(at time.Time) {
 	if pr.Status == PRStatusMerged {
 		return
 	}
 	pr.Status = PRStatusMerged
+	t := at.UTC()
+	pr.MergedAt = &t
+
 }
 
 // Вспомогательная функция для проверки дубликатов
