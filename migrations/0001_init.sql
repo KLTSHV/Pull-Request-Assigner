@@ -1,5 +1,5 @@
 CREATE TABLE teams (
-    team_name TEXT PRTIMARY KEY
+    team_name TEXT PRIMARY KEY
 );
 
 CREATE TABLE users (

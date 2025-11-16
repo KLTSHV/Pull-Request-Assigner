@@ -6,17 +6,17 @@ import (
 	"time"
 )
 
-// PullRequestID — тип идентификатора PR.
+// PullRequestID тип идентификатора PR.
 type PullRequestID string
 
-// PRStatus — статус PR
+// PRStatus статус PR
 type PRStatus string
 
 const (
 	PRStatusOpen   PRStatus = "OPEN"
 	PRStatusMerged PRStatus = "MERGED"
 
-	// MaxReviewersPerPR — бизнес-ограничение из условия.
+	//бизнес ограничение
 	MaxReviewersPerPR = 2
 )
 
@@ -49,7 +49,7 @@ var (
 	ErrPullRequestExists = errors.New("pull request with this ID already exists")
 )
 
-// Cоздаёт PR в статусе OPEN без ревьюверов.
+// Cоздаёт PR в статусе OPEN без ревьюверов
 func NewPullRequest(id PullRequestID, name string, authorID UserID) (*PullRequest, error) {
 	name = strings.TrimSpace(name)
 	if id == "" {
