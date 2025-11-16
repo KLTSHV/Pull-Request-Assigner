@@ -435,12 +435,10 @@ Down-миграции **не** монтируются в Docker и могут п
 
 В корне лежит простой `Makefile`, который упрощает типичные действия:
 
-Примеры таргетов (можно скорректировать под свои):
-
 ```make
-make build      # go build -o bin/pr-reviewer ./cmd/app
-make run        # go run ./cmd/app
-make test       # go test ./...
+make build   
+make run      
+make test       
 make docker-build
 make docker-run
 ```
